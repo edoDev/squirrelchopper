@@ -42,7 +42,7 @@ func NewTileManager(mbtilePath string, useCache bool) *TileManager{
 	log.Println("Initializing tile manager...")
 	fi, err := os.Stat(mbtilePath)
 	if err != nil{
-			log.Fatal("Database %v does not exist...exiting")
+			log.Fatalf("Database %v does not exist...exiting",mbtilePath)
 	}
 
 	//initialize cache....100mb by default
@@ -66,7 +66,7 @@ func NewTileManager(mbtilePath string, useCache bool) *TileManager{
 	if fi.Size() < 100000000 {
 		log.Printf("Database is %v MB....going to try to fit it into RAM", fi.Size()/1000000)
 
-		for i := 1; i < 15; i++ {
+		for i := 0; i < 15; i++ {
 			loadTileLevelIntoCache(i,db, cache)
 		}
 

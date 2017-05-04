@@ -15,6 +15,7 @@ import (
 	"math"
 	"github.com/tingold/squirrelchopper/tiles"
 	"flag"
+
 )
 
 var prepStmt *sql.Stmt
@@ -25,14 +26,21 @@ func main() {
 	var port int
 	var dbString string
 	var help bool
+	var ssl bool
+	var sslKey string
+	var sslcert string
 
 	flag.StringVar(&dbString,"db", "resources/dc-baltimore_maryland.mbtiles", "The MBTiles Database")
+	flag.BoolVar(&ssl,"ssl", true, "Whether to use SSL -- disabling SSL will also disable HTTP2 -- enabled by default")
+	flag.StringVar(&sslKey,"key", "resources/test.key", "The ssl private key")
+	flag.StringVar(&sslcert,"cert", "resources/test.crt", "The ssl private cert")
 	flag.IntVar(&port,"port", 8000,"The port number")
 	flag.BoolVar(&help,"help",false,"This message")
 	flag.Parse()
 
 	if help {
-		flag.Usage()
+		flag.PrintDefaults()
+		return
 	}
 
 	cwd, err := os.Getwd()
@@ -44,7 +52,8 @@ func main() {
 
 	router := httprouter.New()
 	router.GET("/tile/:z/:x/:y", tileHandler)
-	router.ServeFiles(cwd+"/demo/*filepath", http.Dir("pub"))
+	log.Print(cwd)
+	router.ServeFiles("/demo/*filepath", http.Dir(cwd+"/pub"))
 
 	tm = tiles.NewTileManager(dbString, true)
 
@@ -56,9 +65,8 @@ func main() {
 		Handler: router,
 	}
 
-
 	log.Printf("Starting server on port %v",port)
-	srv.ListenAndServeTLS(cwd+"/resources/test.crt",cwd+"/resources/test.key")
+	srv.ListenAndServeTLS(cwd+"resources/test.crt",cwd+"resources/test.key")
 
 }
 
@@ -82,6 +90,7 @@ func tileHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	if tile == nil {
 		log.Printf("Tile not found for %v/%v/%v", ps.ByName("z"),ps.ByName("x"),yInt)
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.WriteHeader(404)
 	} else {
 		w.Header().Set("Content-type","application/x-protobuf")

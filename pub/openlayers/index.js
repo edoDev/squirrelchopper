@@ -2,20 +2,22 @@
 var baseUrl = '../styles/osm-bright-gl-style/';
 
 var tilegrid = ol.tilegrid.createXYZ({
-  tileSize: 256,
+  tileSize: 512,
   maxZoom: 16,
   loadZooms: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
 });
 var resolutions = tilegrid.getResolutions();
 var layer = new ol.layer.VectorTile({
+  renderMode: 'vector',
   source: new ol.source.VectorTile({
     attributions: '© <a href="https://www.mapbox.com/map-feedback/">Mapbox</a> ' +
       '© <a href="http://www.openstreetmap.org/copyright">' +
       'OpenStreetMap contributors</a>',
     format: new ol.format.MVT(),
-    tileGrid: ol.tilegrid.createXYZ({maxZoom: 16, loadZooms: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]}),
-    tilePixelRatio: 16,
-    url: '/tile/{z}/{x}/{y}.mvt'
+    tileGrid: tilegrid,
+    tilePixelRatio: 8,
+
+    url: 'https://{a-d}.localhost:8000/tile/{z}/{x}/{y}.pbf'
     //url: '/geowebcache/service/gmaps?layers=planet&zoom={z}&x={x}&y={y}&FORMAT=application/x-protobuf;type=mapbox-vector'
     // url: 'http://54.172.109.225:8080/geowebcache/service/gmaps?layers=planet&zoom={z}&x={x}&y={y}&FORMAT=application/x-protobuf;type=mapbox-vector'
   })
