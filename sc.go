@@ -4,22 +4,16 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/julienschmidt/httprouter"
-	"strings"
-	"compress/gzip"
-	"io"
-	"bytes"
 	"strconv"
-	"math"
 	"github.com/tingold/squirrelchopper/tiles"
 	"flag"
-
+	"github.com/tingold/squirrelchopper/handler"
 )
 
-var prepStmt *sql.Stmt
 var tm *tiles.TileManager
+var th *handler.Tilehandler
 
 func main() {
 
@@ -48,25 +42,33 @@ func main() {
 		log.Fatal(err)
 	}
 
-
+	tm = tiles.NewTileManager(dbString, true)
+	th = new(handler.Tilehandler)
+	th.Manager = *tm
 
 	router := httprouter.New()
-	router.GET("/tile/:z/:x/:y", tileHandler)
+	router.GET("/tiles/:z/:x/:y", th.Handle)
 	log.Print(cwd)
-	router.ServeFiles("/demo/*filepath", http.Dir(cwd+"/pub"))
 
-	tm = tiles.NewTileManager(dbString, true)
+	//default to serving files
+	fs := http.FileServer(assetFS())
+	router.NotFound = fs
 
 
 
 	//Stand Up server
 	srv := &http.Server{
-		Addr:    ":"+strconv.Itoa(port), // Normally ":443"
+		Addr:    ":"+strconv.Itoa(port),
 		Handler: router,
 	}
 
 	log.Printf("Starting server on port %v",port)
-	srv.ListenAndServeTLS(cwd+"resources/test.crt",cwd+"resources/test.key")
+	error := srv.ListenAndServeTLS(sslcert,sslKey)
+	if(error != nil){
+		log.Fatalf("Failed to start server: %v",error)
+	}
+	log.Print("Exiting")
+
 
 }
 
@@ -75,59 +77,8 @@ func corsHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 }
 
-func tileHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-
-	var tile []byte
-
-	var y string = strings.TrimSuffix(strings.TrimSuffix(ps.ByName("y"),".mvt"),".pbf")
-	var z string = ps.ByName("z")
 
 
-	yInt := normalizeY(y, z)
-
-	tile = tm.GetTile(z,ps.ByName("x"),strconv.Itoa(int(yInt)))
-
-
-	if tile == nil {
-		log.Printf("Tile not found for %v/%v/%v", ps.ByName("z"),ps.ByName("x"),yInt)
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.WriteHeader(404)
-	} else {
-		w.Header().Set("Content-type","application/x-protobuf")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-
-		var buff = bytes.NewBuffer(tile)
-		r,err := gzip.NewReader(buff)
-		if err != nil {
-			log.Printf("error decompressing tile")
-			w.WriteHeader(500)
-			return
-		}
-		io.Copy(w,r)
-		w.WriteHeader(200)
-
-	}
-
-}
-
-func normalizeY(whyStr string, zStr string) (int32){
-
-	z,err := strconv.Atoi(zStr)
-	if err != nil {
-		log.Printf("error converting val: %v to int", zStr)
-		return  -1
-	}
-	y, error := strconv.Atoi(whyStr)
-	if error != nil {
-		log.Printf("error converting val: %v to int", whyStr)
-		return  -1
-	}
-
-	floaty := math.Pow(float64(2.0),float64(z)) - float64(y)
-	floaty--
-
-	return int32(floaty)
-}
 
 func checkErr(err error) {
 	if err != nil {

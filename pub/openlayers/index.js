@@ -17,7 +17,7 @@ var layer = new ol.layer.VectorTile({
     tileGrid: tilegrid,
     tilePixelRatio: 8,
 
-    url: 'https://{a-d}.localhost:8000/tile/{z}/{x}/{y}.pbf'
+    url: 'https://localhost:8000/tile/{z}/{x}/{y}.pbf'
     //url: '/geowebcache/service/gmaps?layers=planet&zoom={z}&x={x}&y={y}&FORMAT=application/x-protobuf;type=mapbox-vector'
     // url: 'http://54.172.109.225:8080/geowebcache/service/gmaps?layers=planet&zoom={z}&x={x}&y={y}&FORMAT=application/x-protobuf;type=mapbox-vector'
   })

@@ -21,18 +21,20 @@ type TileManager struct
 
 }
 
-func (tm *TileManager) GetTile(z string, x string, y string) ([]byte){
+func (tm *TileManager) GetTile(z string, x string, y string) (*tile){
 
-	var tile []byte
+	tile := NewTileStr(z,x,y)
+	var tiledata []byte
 	key := buildKey(z,x,y)
-	tile, err := tm.cache.Get(key)
+	tiledata, err := tm.cache.Get(key)
 	//if tile is empty we can check the DB unless we know everything is already loaded in the cache
 	if tile == nil|| err != nil {
 		if !tm.fullyCached{
 			row := tm.prepStmt.QueryRow(z, x, y)
-			row.Scan(&tile)
+			row.Scan(&tiledata)
 		}
 	}
+	tile.Data = tiledata
 	return tile
 }
 
