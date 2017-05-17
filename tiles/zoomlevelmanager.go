@@ -3,6 +3,7 @@ package tiles
 import (
 	"sync"
 	"math"
+	"github.com/tingold/squirrelchopper/utils"
 )
 
 
@@ -54,8 +55,8 @@ func GetZoomLevelManager() *zoomLevelManager {
 }
 func (zm *zoomLevelManager) ValidTile(t *tile) (bool) {
 	zl := zm.GetLevel(t.z)
-	//log.Printf("Zoom level has max x and y of %v %v",zl.MaxX(), zl.MaxY())
-	//log.Printf("Tile has x and y of %v %v",t.x, t.y)
+	//utils.GetLogging().Debug("Zoom level has max x and y of %v %v",zl.MaxX(), zl.MaxY())
+	//utils.GetLogging().Debug("Tile has x and y of %v %v",t.x, t.y)
 	return t.y <= zl.MaxY() && t.y <= zl.MaxY()
 }
 
@@ -66,11 +67,11 @@ func (zm *zoomLevelManager) GetAdjacentTiles(t *tile) ([]*tile) {
 		for y := -1; y < 1; y++ {
 			if(x == 0 && y == 0){continue}
 			nt := NewTile(t.z,t.x+x, t.y+y)
-			//log.Printf("Made new tile %v %v %v",nt.z,nt.x,nt.y)
+			utils.GetLogging().Debug("Made new tile")
 			if zm.ValidTile(nt){
-				//log.Println("Tile is valid")
+				utils.GetLogging().Debug("Tile is valid")
 				tiles =	append(tiles,nt)
-				//log.Printf("Found valid adjacent tile")
+				utils.GetLogging().Debug("Found valid adjacent tile")
 			}
 		}
 

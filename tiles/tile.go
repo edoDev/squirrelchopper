@@ -3,7 +3,7 @@ package tiles
 import (
 	"math"
 	"strconv"
-	"log"
+	"github.com/tingold/squirrelchopper/utils"
 )
 
 type tile struct {
@@ -43,7 +43,8 @@ func NewTileStr(z string, x string, y string) (*tile){
 	t.y, err = strconv.Atoi(y)
 	t.x, err = strconv.Atoi(x)
 	if(err != nil){
-		log.Printf("error parsing value from string in tile coordinate: %v",err)
+		utils.GetLogging().Error("error parsing value from string in tile coordinate")
+
 	}
 	return t
 }

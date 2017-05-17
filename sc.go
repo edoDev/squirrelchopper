@@ -3,67 +3,55 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/julienschmidt/httprouter"
 	"strconv"
 	"github.com/tingold/squirrelchopper/tiles"
 	"flag"
 	"github.com/tingold/squirrelchopper/handler"
+	"github.com/tingold/squirrelchopper/utils"
 )
 
 var tm *tiles.TileManager
 var th *handler.Tilehandler
 
 func main() {
+	//parse out settings
+	settings := utils.GetSettings()
 
-	var port int
-	var dbString string
-	var help bool
-	var ssl bool
-	var sslKey string
-	var sslcert string
-
-	flag.StringVar(&dbString,"db", "resources/dc-baltimore_maryland.mbtiles", "The MBTiles Database")
-	flag.BoolVar(&ssl,"ssl", true, "Whether to use SSL -- disabling SSL will also disable HTTP2 -- enabled by default")
-	flag.StringVar(&sslKey,"key", "resources/test.key", "The ssl private key")
-	flag.StringVar(&sslcert,"cert", "resources/test.crt", "The ssl private cert")
-	flag.IntVar(&port,"port", 8000,"The port number")
-	flag.BoolVar(&help,"help",false,"This message")
-	flag.Parse()
-
-	if help {
+	//print help message if needed
+	if settings.GetHelp() {
 		flag.PrintDefaults()
 		return
 	}
 
-	cwd, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	tm = tiles.NewTileManager(dbString, true)
+	//initialize the tile manager with one or mone databases
+	tm = tiles.NewTileManager(settings.GetDBs(), true)
 	th = new(handler.Tilehandler)
 	th.Manager = *tm
 
+	//create the HTTP Router -- the tiles go to the tilehandler which uses the tile manager to access the DB
+	//and potentially cache
 	router := httprouter.New()
 	router.GET("/tiles/:z/:x/:y", th.Handle)
-	log.Print(cwd)
 
-	//default to serving files
+
+	//any non tile request will default to serving files
+	//files are NOT actually files but stored in GO code using
+	// https://github.com/elazarl/go-bindata-assetfs
 	fs := http.FileServer(assetFS())
 	router.NotFound = fs
 
 
-
-	//Stand Up server
+	//create server
 	srv := &http.Server{
-		Addr:    ":"+strconv.Itoa(port),
+		Addr:    ":"+strconv.Itoa(settings.GetPort()),
 		Handler: router,
 	}
 
-	log.Printf("Starting server on port %v",port)
-	error := srv.ListenAndServeTLS(sslcert,sslKey)
+	log.Printf("Starting server on port %v",settings.GetPort())
+	//this creates the SSL server which we really need to use server push
+	error := srv.ListenAndServeTLS(settings.GetSslCert(),settings.GetSslKey())
 	if(error != nil){
 		log.Fatalf("Failed to start server: %v",error)
 	}
@@ -76,8 +64,6 @@ func corsHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 }
-
-
 
 
 func checkErr(err error) {

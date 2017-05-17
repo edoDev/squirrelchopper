@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/tingold/squirrelchopper/utils"
 )
 
 
@@ -39,16 +40,16 @@ func (tm *TileManager) GetTile(z string, x string, y string) (*tile){
 }
 
 
-func NewTileManager(mbtilePath string, useCache bool) *TileManager{
+func NewTileManager(mbtilePath []string, useCache bool) *TileManager{
 
 	log.Println("Initializing tile manager...")
-	fi, err := os.Stat(mbtilePath)
+	fi, err := os.Stat(mbtilePath[0])
 	if err != nil{
 			log.Fatalf("Database %v does not exist...exiting",mbtilePath)
 	}
 
 	//initialize cache....100mb by default
-	config :=bigcache.Config{Shards: 1024,Verbose: false, HardMaxCacheSize: 102400000 }
+	config :=bigcache.Config{Shards: 1024,Verbose: false, HardMaxCacheSize: utils.GetSettings().GetCacheSizeMB() * 1000 }
 	cache, initErr := bigcache.NewBigCache(config)
 
 	if initErr != nil{
@@ -59,7 +60,7 @@ func NewTileManager(mbtilePath string, useCache bool) *TileManager{
 
 
 	//// Open database file
-	db, err := sql.Open("sqlite3", mbtilePath)
+	db, err := sql.Open("sqlite3", mbtilePath[0])
 	if err != nil {
 		log.Fatal("Error opening database!")
 	}
@@ -71,8 +72,6 @@ func NewTileManager(mbtilePath string, useCache bool) *TileManager{
 		for i := 0; i < 15; i++ {
 			loadTileLevelIntoCache(i,db, cache)
 		}
-
-
 	}
 //	else{
 //log.Printf("Database is too big, just caching the first 8 layers")

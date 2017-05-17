@@ -11,6 +11,8 @@ import (
 	"math"
 	"log"
 	"github.com/tingold/squirrelchopper/tiles"
+	"github.com/tingold/squirrelchopper/utils"
+	"fmt"
 )
 
 type Tilehandler struct {
@@ -31,7 +33,8 @@ func (th *Tilehandler) Handle(w http.ResponseWriter, r *http.Request, ps httprou
 
 
 	if t.Data == nil {
-		log.Printf("Tile not found for %v/%v/%v", ps.ByName("z"),ps.ByName("x"),yInt)
+		utils.GetLogging().Warn(fmt.Sprintf("Tile not found for %v/%v/%v", ps.ByName("z"),ps.ByName("x"),yInt))
+
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.WriteHeader(404)
 	} else {
@@ -41,7 +44,7 @@ func (th *Tilehandler) Handle(w http.ResponseWriter, r *http.Request, ps httprou
 		var buff = bytes.NewBuffer(t.Data)
 		r,err := gzip.NewReader(buff)
 		if err != nil {
-			log.Printf("error decompressing tile")
+			utils.GetLogging().Error("error decompressing tile")
 			w.WriteHeader(500)
 			return
 		}
@@ -52,7 +55,7 @@ func (th *Tilehandler) Handle(w http.ResponseWriter, r *http.Request, ps httprou
 			options := &http.PushOptions{
 			}
 			adjecentArray := tiles.GetZoomLevelManager().GetAdjacentTiles(t)
-			log.Print(len(adjecentArray))
+
 			for _, adjtile := range adjecentArray {
 				if(adjtile == nil){continue}
 				url := adjtile.GetUrl()
