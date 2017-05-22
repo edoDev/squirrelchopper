@@ -22,7 +22,7 @@ SC has a small memory footprint as well -- using about 100mb of ram even with a 
 
 ### What's up with the name?
 I've got a garden-wind-powered-metal-thing in my back yard and the squirrels love to climb on it. It rotates and looks like its going to 
-chop them up -- hence the name squirrelchopper.  Anyways, watching it while drinking coffee one day I was stuck at how efficiently it moved
+chop them up -- hence the name squirrelchopper.  Anyways, watching it while drinking coffee one day I was struck at how efficiently it moved
 and thought it would be a good name for what this is trying to accomplish
 
 ### References, projects and data this leverages
