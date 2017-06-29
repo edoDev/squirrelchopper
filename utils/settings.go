@@ -60,14 +60,14 @@ func (s *settings) GetLevel() (int){
 func (s *settings) init(){
 
 	var level string
-	flag.StringVar(&s.dbString,"db", "resources/dc-baltimore_maryland.mbtiles", "The MBTiles Database -- multiple can be specified by seperating the paths via commas")
+	flag.StringVar(&s.dbString,"db", "resources/ireland.mbtiles", "The MBTiles Database -- multiple can be specified by seperating the paths via commas")
 	flag.BoolVar(&s.ssl,"ssl", true, "Whether to use SSL -- disabling SSL will also disable HTTP2 -- enabled by default")
 	flag.StringVar(&s.sslKey,"key", "resources/test.key", "The ssl private key")
 	flag.StringVar(&s.sslcert,"cert", "resources/test.crt", "The ssl private cert")
 	flag.StringVar(&level,"loglevel", "INFO", "Log level - one of TRACE, DEBUG, INFO, WARN, ERROR")
 	flag.IntVar(&s.port,"port", 8000,"The port number")
 	flag.BoolVar(&s.help,"help",false,"This message")
-	flag.IntVar(&s.cacheSizeMB,"cacheSize", 100,"The size of the in memeory cache (in MB)")
+	flag.IntVar(&s.cacheSizeMB,"cacheSize", 200,"The size of the in memeory cache (in MB)")
 	flag.Parse()
 	//Split DBs
 	log.Printf("Log level: %v",level)

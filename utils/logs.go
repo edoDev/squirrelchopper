@@ -3,6 +3,7 @@ package utils
 import (
 	"sync"
 	"time"
+	"fmt"
 )
 
 var oneTime sync.Once
@@ -35,29 +36,29 @@ func (l *logging) init(){
 		go l.logWriter()
 }
 
-func (l *logging) Trace(s string){
+func (l *logging) Trace(s string,v ...interface{}){
 	if(l.level == TRACE){
-		l.logStream <- "TRACE: "+s
+		l.logStream <- "TRACE: "+fmt.Sprintf(s,v...)
 	}
 }
-func (l *logging) Debug(s string){
+func (l *logging) Debug(s string,v ...interface{}){
 	if(l.level <= DEBUG){
-		l.logStream <- "DEBUG: "+s
+		l.logStream <- "DEBUG: "+fmt.Sprintf(s,v...)
 	}
 }
-func (l *logging) Info(s string){
+func (l *logging) Info(s string,v ...interface{}){
 	if(l.level <= INFO){
-		l.logStream <- "INFO: "+s
+		l.logStream <- "INFO: "+fmt.Sprintf(s,v...)
 	}
 }
-func (l *logging) Warn(s string){
+func (l *logging) Warn(s string,v ...interface{}){
 	if(l.level <= WARN){
-		l.logStream <- "WARN: "+s
+		l.logStream <- "WARN: "+fmt.Sprintf(s,v...)
 	}
 }
-func (l *logging) Error(s string){
+func (l *logging) Error(s string,v ...interface{}){
 	//Error aways gets logged
-	l.logStream <- "ERROR: "+s
+	l.logStream <- "ERROR: "+fmt.Sprintf(s,v...)
 
 }
 

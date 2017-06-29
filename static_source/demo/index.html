@@ -8,15 +8,15 @@
     body { margin:0; padding:0; }
     #map { position:absolute; top:0; bottom:0; width:100%; }
   </style>
-  <script src='https://localhost:8000/js/mapbox-gl.js'></script>
-  <link href='https://localhost:8000/style/mapbox-gl.css' rel='stylesheet' />
+  <script src='/js/mapbox-gl.js'></script>
+  <link href='/style/mapbox-gl.css' rel='stylesheet' />
 </head>
 <body>
   <div id='map'></div>
   <script>
   var map = new mapboxgl.Map({
       container: 'map',
-      style: 'https://localhost:8000/style/osm-liberty/osm-liberty.json',
+      style: '/style/osm-liberty/osm-liberty.json',
       center: [8.538961,47.372476],
       zoom: 5,
       hash: true

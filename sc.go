@@ -10,6 +10,7 @@ import (
 	"flag"
 	"github.com/tingold/squirrelchopper/handler"
 	"github.com/tingold/squirrelchopper/utils"
+
 )
 
 var tm *tiles.TileManager
@@ -24,7 +25,9 @@ func main() {
 		flag.PrintDefaults()
 		return
 	}
+	logger := utils.GetLogging()
 
+	logger.Debug("Setting up tile manager with data from %v", settings.GetDBs())
 	//initialize the tile manager with one or mone databases
 	tm = tiles.NewTileManager(settings.GetDBs(), true)
 	th = new(handler.Tilehandler)
@@ -42,20 +45,28 @@ func main() {
 	fs := http.FileServer(assetFS())
 	router.NotFound = fs
 
-
 	//create server
 	srv := &http.Server{
 		Addr:    ":"+strconv.Itoa(settings.GetPort()),
 		Handler: router,
 	}
 
-	log.Printf("Starting server on port %v",settings.GetPort())
-	//this creates the SSL server which we really need to use server push
-	error := srv.ListenAndServeTLS(settings.GetSslCert(),settings.GetSslKey())
-	if(error != nil){
-		log.Fatalf("Failed to start server: %v",error)
+	logger.Info("Starting server on port %v",settings.GetPort())
+	if(settings.GetSsl()) {
+		logger.Info("Using certificate %v and key %v", settings.GetSslCert(), settings.GetSslKey())
+		//this creates the SSL server which we really need to use server push
+		error := srv.ListenAndServeTLS(settings.GetSslCert(),settings.GetSslKey())
+		if(error != nil){
+			log.Fatalf("Failed to start server: %v",error)
+		}
+	} else {
+		error := srv.ListenAndServe()
+		if(error != nil){
+			log.Fatalf("Failed to start server: %v",error)
+		}
 	}
-	log.Print("Exiting")
+
+	logger.Info("Exiting")
 
 
 }
